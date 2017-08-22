@@ -1,2 +1,3 @@
-# hazelcast-docker-swarm
-Hazelcast Docker Swarm SPI
+#  hazelcast-docker-swarm
+
+Add instructions for project developers here.

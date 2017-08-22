@@ -10,7 +10,9 @@ import com.hazelcast.spi.discovery.AddressLocator;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.net.InetAddress.getLocalHost;
 
@@ -62,6 +64,12 @@ class SwarmNetworkInspector implements AddressLocator, MemberLocator{
 
     @Override
     public List<Container> findMemberContainers(String serviceName) {
-        return dockerClient.listContainersCmd().withShowAll(true).exec();
+        return dockerClient
+                .listContainersCmd()
+                .withShowAll(true)
+                .exec()
+                .stream()
+                .filter(it -> Arrays.stream(it.getNames()).filter(iter -> iter.contains(serviceName)).count() > 0)
+                .collect(Collectors.toList());
     }
 }

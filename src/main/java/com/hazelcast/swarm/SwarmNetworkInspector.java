@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 
 import static java.net.InetAddress.getLocalHost;
 
-class SwarmNetworkInspector implements AddressLocator, MemberLocator{
+public class SwarmNetworkInspector implements AddressLocator, MemberLocator{
 
-    private final DockerClient dockerClient;
-    private final ILogger logger;
+    private DockerClient dockerClient;
+    private ILogger logger;
 
-    SwarmNetworkInspector(DockerClient dockerClient, ILogger logger) {
+    public SwarmNetworkInspector(DockerClient dockerClient, ILogger logger) {
         this.dockerClient = dockerClient;
         this.logger = logger;
     }
@@ -32,9 +32,13 @@ class SwarmNetworkInspector implements AddressLocator, MemberLocator{
         try {
             String hostname = getLocalHost().getHostName();
             Network.ContainerNetworkConfig config = network.stream()
+                    .peek(it -> logger.info(it.toString()))
                     .map(it -> dockerClient.inspectNetworkCmd().withNetworkId(it.getId()).exec())
+                    .peek(it -> logger.info(it.toString()))
                     .map(Network::getContainers)
+                    .peek(it -> logger.info(it.toString()))
                     .flatMap(it -> it.values().stream())
+                    .peek(it -> logger.info(it.toString()))
                     .filter(it -> it.getEndpointId().startsWith(hostname))
                     .findFirst()
                     .orElse(null);
@@ -43,7 +47,7 @@ class SwarmNetworkInspector implements AddressLocator, MemberLocator{
                 logger.warning("unable to find container network config");
                 return null;
             }
-
+            logger.info(config.getIpv4Address());
             return new InetSocketAddress(InetAddress.getByName(config.getIpv4Address()), 0);
 
         } catch (UnknownHostException e) {
@@ -69,6 +73,7 @@ class SwarmNetworkInspector implements AddressLocator, MemberLocator{
                 .withShowAll(true)
                 .exec()
                 .stream()
+                .peek(it -> logger.info(it.toString()))
                 .filter(it -> Arrays.stream(it.getNames()).filter(iter -> iter.contains(serviceName)).count() > 0)
                 .collect(Collectors.toList());
     }

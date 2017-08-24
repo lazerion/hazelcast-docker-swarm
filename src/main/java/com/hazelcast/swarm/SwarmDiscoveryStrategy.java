@@ -39,9 +39,12 @@ public class SwarmDiscoveryStrategy extends AbstractDiscoveryStrategy {
         List<Container> containers = memberLocator.findMemberContainers(serviceName);
 
         containers.stream()
+                .peek(it -> getLogger().info(it.toString()))
                 .map(it -> it.getNetworkSettings().getNetworks())
                 .flatMap(it -> it.values().stream())
+                .peek(it -> getLogger().info(it.toString()))
                 .map(ContainerNetwork::getIpAddress)
+                .peek(it -> getLogger().info(it))
                 .map(it -> {
                     try {
                         return InetAddress.getByName(it);
@@ -50,6 +53,7 @@ public class SwarmDiscoveryStrategy extends AbstractDiscoveryStrategy {
                     }
                 })
                 .filter(Objects::nonNull)
+                .peek(it -> getLogger().info(it.toString()))
                 .map(it -> new SimpleDiscoveryNode(new Address(it, PORT)))
                 .forEach(nodes::add);
 

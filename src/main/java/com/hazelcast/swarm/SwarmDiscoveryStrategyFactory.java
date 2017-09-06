@@ -26,6 +26,7 @@ public class SwarmDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
 
     @Override
     public DiscoveryStrategy newDiscoveryStrategy(DiscoveryNode discoveryNode, ILogger logger, Map<String, Comparable> properties) {
+        logger.info("creating discovery strategy.");
         return new SwarmDiscoveryStrategy(createMemberLocator(logger), logger, properties);
     }
 
@@ -45,6 +46,6 @@ public class SwarmDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
 
     @Override
     public Collection<PropertyDefinition> getConfigurationProperties() {
-        return null;
+        return PROPERTY_DEFINITIONS;
     }
 }

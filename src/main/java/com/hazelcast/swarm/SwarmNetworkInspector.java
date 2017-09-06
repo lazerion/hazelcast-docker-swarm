@@ -12,11 +12,12 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.net.InetAddress.getLocalHost;
 
-public class SwarmNetworkInspector implements AddressLocator, MemberLocator{
+public class SwarmNetworkInspector implements AddressLocator, MemberLocator {
 
     private DockerClient dockerClient;
     private ILogger logger;
@@ -31,24 +32,28 @@ public class SwarmNetworkInspector implements AddressLocator, MemberLocator{
 
         try {
             String hostname = getLocalHost().getHostName();
+            logger.info("Hostname: " + hostname);
+
+            // todo need to filter for service name and/or overlay also
             Network.ContainerNetworkConfig config = network.stream()
-                    .peek(it -> logger.info(it.toString()))
+                    .filter(it -> it.getName().equalsIgnoreCase("hz_backend"))
                     .map(it -> dockerClient.inspectNetworkCmd().withNetworkId(it.getId()).exec())
-                    .peek(it -> logger.info(it.toString()))
                     .map(Network::getContainers)
-                    .peek(it -> logger.info(it.toString()))
-                    .flatMap(it -> it.values().stream())
-                    .peek(it -> logger.info(it.toString()))
-                    .filter(it -> it.getEndpointId().startsWith(hostname))
+                    .flatMap(it -> it.entrySet().stream())
+                    .filter(it -> it.getKey().startsWith(hostname))
+                    .map(Map.Entry::getValue)
                     .findFirst()
                     .orElse(null);
 
-            if (config == null){
+            if (config == null) {
                 logger.warning("unable to find container network config");
                 return null;
             }
-            logger.info(config.getIpv4Address());
-            return new InetSocketAddress(InetAddress.getByName(config.getIpv4Address()), 0);
+
+            // todo refine
+            logger.info(config.getIpv4Address().split("/")[0]);
+
+            return new InetSocketAddress(InetAddress.getByName(config.getIpv4Address().split("/")[0]), 0);
 
         } catch (UnknownHostException e) {
             logger.warning("unknown host exception", e);

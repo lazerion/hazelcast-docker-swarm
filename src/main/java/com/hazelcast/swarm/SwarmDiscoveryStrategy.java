@@ -21,7 +21,7 @@ import static com.hazelcast.swarm.SwarmProperties.SWARM_SYSTEM_PREFIX;
 
 public class SwarmDiscoveryStrategy extends AbstractDiscoveryStrategy {
 
-    private static final String DEFAULT_SERVICE_NAME =  "hazelcast";
+    private static final String DEFAULT_SERVICE_NAME =  "hz";
     private static final int PORT = 5701;
 
     private final MemberLocator memberLocator;
@@ -37,6 +37,7 @@ public class SwarmDiscoveryStrategy extends AbstractDiscoveryStrategy {
     public Iterable<DiscoveryNode> discoverNodes() {
         List<DiscoveryNode> nodes = new ArrayList<>();
         List<Container> containers = memberLocator.findMemberContainers(serviceName);
+        getLogger().info("Containers size: " + containers.size());
 
         containers.stream()
                 .peek(it -> getLogger().info(it.toString()))

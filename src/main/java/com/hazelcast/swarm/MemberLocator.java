@@ -1,11 +1,10 @@
 package com.hazelcast.swarm;
 
 
-import com.github.dockerjava.api.model.Container;
-
+import java.net.InetSocketAddress;
 import java.util.List;
 
 interface MemberLocator {
 
-    List<Container> findMemberContainers(String serviceName);
+    List<InetSocketAddress>  findMemberContainers(String serviceName);
 }
